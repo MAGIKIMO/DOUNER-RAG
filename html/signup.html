@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입 - Douner AI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-color: #0d1117;
+            --surface-color: #161b22;
+            --text-color: #e6edf3;
+            --border-color: #30363d;
+            --button-bg: #3b82f6;
+            --button-hover: #60a5fa;
+            --error-color: #da3633;
+            --success-color: #238636;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', 'Segoe UI', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            padding: 40px 30px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--surface-color);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .logo p {
+            font-size: 14px;
+            color: var(--text-color);
+            opacity: 0.75;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+            background-color: #0d1117;
+            color: var(--text-color);
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: var(--button-bg);
+        }
+
+        .password-requirements {
+            font-size: 12px;
+            color: var(--text-color);
+            opacity: 0.65;
+            margin-top: 5px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-submit {
+            background-color: var(--button-bg);
+            color: white;
+        }
+
+        .btn-submit:hover {
+            background-color: var(--button-hover);
+        }
+
+        .btn-submit:disabled {
+            background-color: #4b5563;
+            cursor: not-allowed;
+        }
+
+        .btn-cancel {
+            background-color: transparent;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-cancel:hover {
+            background-color: #1c2128;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .login-link a {
+            color: var(--button-bg);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            background-color: var(--error-color);
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .success-message {
+            background-color: var(--success-color);
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <h1>Douner AI</h1>
+            <p>유학생 AI 상담 서비스</p>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+        <div class="success-message" id="successMessage"></div>
+
+        <form id="signupForm">
+            <div class="form-group">
+                <label for="name">이름</label>
+                <input 
+                    type="text" 
+                    id="name" 
+                    name="name" 
+                    placeholder="성명을 입력하세요" 
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="email">이메일</label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    placeholder="someone@example.com" 
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="password">비밀번호</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    placeholder="비밀번호를 입력하세요" 
+                    required
+                >
+                <p class="password-requirements">
+                    8자 이상, 특수문자 포함 권장
+                </p>
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">비밀번호 확인</label>
+                <input 
+                    type="password" 
+                    id="confirmPassword" 
+                    name="confirmPassword" 
+                    placeholder="비밀번호를 다시 입력하세요" 
+                    required
+                >
+            </div>
+
+            <div class="button-group">
+                <button type="button" class="btn-cancel" onclick="window.location.href='/'">
+                    취소
+                </button>
+                <button type="submit" class="btn-submit">
+                    가입하기
+                </button>
+            </div>
+        </form>
+
+        <div class="login-link">
+            이미 계정이 있으신가요? <a href="/login">로그인</a>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('signupForm');
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            // 유효성 검사
+            if (!name || !email || !password || !confirmPassword) {
+                showError('모든 항목을 입력해주세요.');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showError('비밀번호가 일치하지 않습니다.');
+                return;
+            }
+
+            if (password.length < 6) {
+                showError('비밀번호는 최소 6자 이상이어야 합니다.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/v1/signup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        email: email,
+                        password: password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showSuccess('회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.');
+                    setTimeout(() => {
+                        window.location.href = '/login';
+                    }, 2000);
+                } else {
+                    showError(data.detail || '회원가입에 실패했습니다.');
+                }
+            } catch (error) {
+                showError('네트워크 오류가 발생했습니다.');
+                console.error('Error:', error);
+            }
+        });
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.add('show');
+            successMessage.classList.remove('show');
+        }
+
+        function showSuccess(message) {
+            successMessage.textContent = message;
+            successMessage.classList.add('show');
+            errorMessage.classList.remove('show');
+        }
+    </script>
+</body>
+</html>

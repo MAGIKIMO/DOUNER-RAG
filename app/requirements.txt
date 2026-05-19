@@ -1,0 +1,25 @@
+# DB
+mysql-connector-python==9.0.0
+
+# PDF 처리
+PyMuPDF==1.24.10
+
+# 환경변수
+python-dotenv==1.0.1
+
+# FastAPI 서버
+fastapi>=0.115.0
+uvicorn>=0.30.0
+pydantic>=2.9.0
+
+# RAG 핵심
+langchain-community>=0.3.0
+langchain-huggingface
+sentence-transformers
+chromadb
+
+# Groq LLM
+groq
+
+beautifulsoup4
+requests

@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마이페이지 - Douner AI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-color: #0d1117;
+            --surface-color: #161b22;
+            --surface-2: #1c2128;
+            --text-color: #e6edf3;
+            --text-muted: #9aa4af;
+            --border-color: #30363d;
+            --button-bg: #3b82f6;
+            --button-hover: #60a5fa;
+            --error-color: #da3633;
+            --success-color: #238636;
+            --warning-color: #d29922;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', 'Segoe UI', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        .page {
+            width: 100%;
+            max-width: 980px;
+            margin: 0 auto;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .brand-badge {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #3b82f6, #7c3aed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .brand h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .brand p {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .top-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 11px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--button-bg);
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--button-hover);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--text-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--surface-2);
+        }
+
+        .btn-danger {
+            background-color: transparent;
+            color: #ffb4b0;
+            border: 1px solid #5b2b2b;
+        }
+
+        .btn-danger:hover {
+            background-color: rgba(218, 54, 51, 0.12);
+        }
+
+        .panel {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 24px;
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 18px;
+            margin-bottom: 18px;
+        }
+
+        .profile-card h2 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .profile-card p {
+            color: var(--text-muted);
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .status-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 600;
+            border: 1px solid var(--border-color);
+            background-color: var(--surface-2);
+        }
+
+        .badge.success {
+            color: #8ddb8c;
+            border-color: rgba(35, 134, 54, 0.45);
+        }
+
+        .badge.warning {
+            color: #ffd37a;
+            border-color: rgba(210, 153, 34, 0.45);
+        }
+
+        .summary-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 14px;
+        }
+
+        .summary-card h3 {
+            font-size: 16px;
+            margin-bottom: 2px;
+        }
+
+        .summary-card p {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .stat-box {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 18px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .stat-sub {
+            margin-top: 8px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            margin-bottom: 16px;
+        }
+
+        .menu-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .menu-item {
+            background-color: var(--surface-2);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .menu-item strong {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 15px;
+        }
+
+        .menu-item p {
+            color: var(--text-muted);
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .menu-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .history-item {
+            background-color: var(--surface-2);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 14px;
+        }
+
+        .history-role {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--button-hover);
+            margin-bottom: 6px;
+        }
+
+        .history-text {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-color);
+            word-break: break-word;
+        }
+
+        .history-time {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
+
+        .empty-box {
+            background-color: var(--surface-2);
+            border: 1px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 18px;
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .message-box {
+            margin-bottom: 18px;
+            padding: 12px 14px;
+            border-radius: 6px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .message-box.show {
+            display: block;
+        }
+
+        .message-box.success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .message-box.error {
+            background-color: var(--error-color);
+            color: white;
+        }
+
+        @media (max-width: 900px) {
+            .hero,
+            .content-grid,
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 16px;
+            }
+
+            .panel,
+            .stat-box {
+                padding: 18px;
+            }
+
+            .brand h1 {
+                font-size: 22px;
+            }
+
+            .top-actions {
+                width: 100%;
+            }
+
+            .top-actions .btn {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="topbar">
+            <div class="brand">
+                <div class="brand-badge">👤</div>
+                <div>
+                    <h1>마이페이지</h1>
+                    <p>내 계정 상태와 최근 활동을 한눈에 확인하세요</p>
+                </div>
+            </div>
+
+            <div class="top-actions">
+                <button class="btn btn-secondary" onclick="window.location.href='/'">홈으로</button>
+            </div>
+        </div>
+
+        <div id="messageBox" class="message-box"></div>
+
+        <div class="hero">
+            <div class="panel profile-card">
+                <h2 id="welcomeTitle">안녕하세요 👋</h2>
+                <p id="welcomeDesc">
+                    Douner AI에서 비자, 학사, 장학금, 생활 정보를 더 편하게 확인할 수 있어요.
+                </p>
+
+                <div class="status-row">
+                    <div class="badge" id="loginBadge">확인 중...</div>
+                    <div class="badge" id="tokenBadge">토큰 확인 중...</div>
+                    <div class="badge" id="historyBadge">대화 기록 확인 중...</div>
+                </div>
+            </div>
+
+            <div class="panel summary-card">
+                <div>
+                    <h3>빠른 안내</h3>
+                    <p>로그인된 계정의 정보와 서버에 저장된 상담 기록을 보여줍니다.</p>
+                </div>
+                <div class="menu-actions">
+                    <button class="btn btn-secondary" id="loginBtn" onclick="window.location.href='/login'">로그인</button>
+                    <button class="btn btn-secondary" id="signupBtn" onclick="window.location.href='/signup'">회원가입</button>
+                    <button class="btn btn-danger" onclick="logout()">로그아웃</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-label">최근 활동</div>
+                <div class="stat-value" id="lastActivity">-</div>
+                <div class="stat-sub">마지막 대화 기준</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">로그인 상태</div>
+                <div class="stat-value" id="loginState">비로그인</div>
+                <div class="stat-sub">authToken 기준 표시</div>
+            </div>
+        </div>
+
+        <div class="content-grid">
+            <div class="panel">
+                <h3 class="section-title">내 메뉴</h3>
+                <div class="menu-list">
+                    <div class="menu-item">
+                        <strong>💬 상담 계속하기</strong>
+                        <p>홈 화면으로 돌아가서 바로 질문을 이어갈 수 있습니다.</p>
+                        <div class="menu-actions">
+                            <button class="btn btn-primary" onclick="window.location.href='/'">채팅 열기</button>
+                        </div>
+                    </div>
+
+                    <div class="menu-item">
+                        <strong>🧹 대화 기록 정리</strong>
+                        <p>브라우저에 저장된 상담 기록을 삭제해서 새로 시작할 수 있습니다.</p>
+                        <div class="menu-actions">
+                            <button class="btn btn-danger" onclick="clearHistory()">기록 삭제</button>
+                        </div>
+                    </div>
+
+                    <div class="menu-item">
+                        <strong>🔐 계정 관리</strong>
+                        <p>로그인 상태를 확인하고, 필요하면 다시 로그인하거나 로그아웃할 수 있습니다.</p>
+                        <div class="menu-actions">
+                            <button class="btn btn-secondary" onclick="window.location.href='/login'">로그인</button>
+                            <button class="btn btn-secondary" onclick="window.location.href='/signup'">회원가입</button>
+                            <button class="btn btn-danger" onclick="logout()">로그아웃</button>
+                        </div>
+                    </div>
+
+                    <div class="menu-item">
+                        <strong>📌 추천 질문 주제</strong>
+                        <p>비자 신청, 장학금 조건, 수강신청, 졸업 요건 같은 주제를 메인에서 바로 물어보면 좋아요.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3 class="section-title">최근 대화 기록</h3>
+                <div id="historyList" class="history-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'douner_chat_history';
+        const TOKEN_KEY = 'authToken';
+
+        let serverHistory = [];
+        let currentUser = null;
+
+        function getToken() {
+            return localStorage.getItem(TOKEN_KEY);
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const d = new Date(dateString);
+            if (isNaN(d.getTime())) return '-';
+
+            const yy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            const hh = String(d.getHours()).padStart(2, '0');
+            const mi = String(d.getMinutes()).padStart(2, '0');
+
+            return `${yy}.${mm}.${dd} ${hh}:${mi}`;
+        }
+
+        function escapeHtml(value) {
+            return String(value || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function showMessage(text, type = 'success') {
+            const box = document.getElementById('messageBox');
+            box.textContent = text;
+            box.className = `message-box show ${type}`;
+            setTimeout(() => {
+                box.className = 'message-box';
+            }, 2200);
+        }
+
+        async function authFetch(url, options = {}) {
+            const token = getToken();
+            return fetch(url, {
+                ...options,
+                headers: {
+                    ...(options.headers || {}),
+                    'Authorization': token ? `Bearer ${token}` : ''
+                }
+            });
+        }
+
+        async function loadAccount() {
+            const token = getToken();
+            if (!token) return;
+
+            const meRes = await authFetch('/api/v1/me');
+            if (!meRes.ok) {
+                localStorage.removeItem(TOKEN_KEY);
+                localStorage.removeItem('authUser');
+                return;
+            }
+
+            const meData = await meRes.json();
+            currentUser = meData.user;
+            localStorage.setItem('authUser', JSON.stringify(currentUser));
+
+            const historyRes = await authFetch('/api/v1/chat-history?limit=50');
+            if (historyRes.ok) {
+                const historyData = await historyRes.json();
+                serverHistory = historyData.history || [];
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem(TOKEN_KEY);
+            localStorage.removeItem('authUser');
+            showMessage('로그아웃되었습니다.', 'success');
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 700);
+        }
+
+        async function clearHistory() {
+            if (!confirm('저장된 대화 기록을 삭제할까요?')) return;
+
+            const token = getToken();
+            if (token) {
+                const res = await authFetch('/api/v1/chat-history', { method: 'DELETE' });
+                if (!res.ok) {
+                    showMessage('서버 기록 삭제에 실패했습니다.', 'error');
+                    return;
+                }
+            }
+
+            localStorage.removeItem(STORAGE_KEY);
+            serverHistory = [];
+            showMessage('대화 기록이 삭제되었습니다.', 'success');
+            renderSummary();
+            renderHistory();
+        }
+
+        function renderSummary() {
+            const token = getToken();
+            const lastItem = serverHistory.length ? serverHistory[serverHistory.length - 1] : null;
+
+            document.getElementById('lastActivity').textContent = lastItem ? formatDate(lastItem.created_at) : '-';
+            document.getElementById('loginState').textContent = token && currentUser ? '로그인' : '비로그인';
+
+            const loginBadge = document.getElementById('loginBadge');
+            const tokenBadge = document.getElementById('tokenBadge');
+            const historyBadge = document.getElementById('historyBadge');
+
+            if (token && currentUser) {
+                loginBadge.textContent = `${currentUser.name}님 로그인`;
+                loginBadge.className = 'badge success';
+                tokenBadge.textContent = currentUser.email;
+                tokenBadge.className = 'badge success';
+                document.getElementById('welcomeTitle').textContent = `${currentUser.name}님, 환영합니다`;
+                document.getElementById('welcomeDesc').textContent = '로그인된 계정으로 저장된 이전 상담 기록을 확인할 수 있어요.';
+                document.getElementById('loginBtn').style.display = 'none';
+                document.getElementById('signupBtn').style.display = 'none';
+            } else {
+                loginBadge.textContent = '비로그인 상태';
+                loginBadge.className = 'badge warning';
+                tokenBadge.textContent = '로그인 필요';
+                tokenBadge.className = 'badge warning';
+            }
+
+            if (serverHistory.length > 0) {
+                historyBadge.textContent = `상담 ${serverHistory.length}건 저장됨`;
+                historyBadge.className = 'badge success';
+            } else {
+                historyBadge.textContent = token ? '저장된 상담 없음' : '로그인 후 확인 가능';
+                historyBadge.className = 'badge warning';
+            }
+        }
+
+        function renderHistory() {
+            const historyList = document.getElementById('historyList');
+
+            if (!getToken()) {
+                historyList.innerHTML = `
+                    <div class="empty-box">
+                        로그인하면 이전에 물어봤던 질문과 답변을 이곳에서 확인할 수 있어요.<br>
+                        먼저 로그인한 뒤 상담을 시작해보세요.
+                    </div>
+                `;
+                return;
+            }
+
+            if (!serverHistory.length) {
+                historyList.innerHTML = `
+                    <div class="empty-box">
+                        아직 저장된 상담 기록이 없어요.<br>
+                        로그인 상태에서 질문하면 이곳에 자동으로 저장됩니다.
+                    </div>
+                `;
+                return;
+            }
+
+            const recentHistory = serverHistory.slice(-8).reverse();
+
+            historyList.innerHTML = recentHistory.map(item => {
+                const q = escapeHtml(item.question);
+                const a = escapeHtml(item.answer);
+                const shortAnswer = a.length > 160 ? a.slice(0, 160) + '...' : a;
+
+                return `
+                    <div class="history-item">
+                        <div class="history-role">사용자 질문</div>
+                        <div class="history-text">${q}</div>
+                        <div class="history-role" style="margin-top:12px;">AI 답변</div>
+                        <div class="history-text">${shortAnswer}</div>
+                        <div class="history-time">${formatDate(item.created_at)} · ${escapeHtml(item.language || 'ko')}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        window.onload = async function() {
+            try {
+                await loadAccount();
+            } catch (err) {
+                showMessage('계정 정보를 불러오지 못했습니다.', 'error');
+                console.error(err);
+            }
+            renderSummary();
+            renderHistory();
+        };
+
+    </script>
+</body>
+</html>

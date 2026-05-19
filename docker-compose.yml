@@ -1,0 +1,59 @@
+services:
+  # 1. Web / Reverse Proxy
+  web:
+    image: nginx:latest
+    container_name: douner-web
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./html:/usr/share/nginx/html
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - douner-rag-app
+
+  # 2. Vector DB
+  vector-db:
+    image: chromadb/chroma
+    container_name: douner-vector-db
+    restart: always
+    expose:
+      - "8000"
+    volumes:
+      - ./data/vector_data:/chroma/chroma
+
+  # 3. MySQL
+  db:
+    image: mysql:8.0
+    container_name: douner-db
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - ./data/mysql_data:/var/lib/mysql
+    expose:
+      - "3306"
+
+  # 4. FastAPI / RAG App
+  douner-rag-app:
+    container_name: douner-rag-app
+    build: ./app
+    restart: always
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+    expose:
+      - "8000"
+    volumes:
+      - ./app:/app
+      - ./data/all_data:/data/all_data
+    env_file:
+      - .env
+    environment:
+      MYSQL_HOST: db
+      CHROMA_HOST: vector-db
+      CHROMA_PORT: 8000
+    depends_on:
+      - db
+      - vector-db

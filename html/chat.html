@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Douner AI - 유학생 AI 상담</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0d1117;
+            --surface: #161b22;
+            --surface2: #1c2128;
+            --border: #30363d;
+            --accent: #3b82f6;
+            --accent2: #60a5fa;
+            --text: #e6edf3;
+            --text-muted: #7d8590;
+            --user-bubble: #1d4ed8;
+            --bot-bubble: #1c2128;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            height: 100dvh; /* ✅ 모바일 주소창 대응 */
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -200px;
+            right: -200px;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(13,17,23,0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left { display: flex; align-items: center; gap: 10px; }
+
+        .logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent), #7c3aed);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .header-title { font-family: 'DM Serif Display', serif; font-size: 18px; }
+        .header-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+        .header-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .lang-selector { display: flex; gap: 4px; flex-wrap: wrap; }
+
+        .lang-btn {
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        .lang-btn:hover { border-color: var(--accent); color: var(--accent2); }
+        .lang-btn.active { background: var(--accent); border-color: var(--accent); color: white; }
+
+        .clear-btn {
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Noto Sans KR', sans-serif;
+            white-space: nowrap;
+        }
+
+        .clear-btn:hover { border-color: #f85149; color: #f85149; }
+
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            position: relative;
+            z-index: 1;
+            -webkit-overflow-scrolling: touch; /* ✅ iOS 스크롤 부드럽게 */
+        }
+
+        .chat-container::-webkit-scrollbar { width: 4px; }
+        .chat-container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+        .welcome {
+            text-align: center;
+            padding: 30px 16px;
+            animation: fadeIn 0.6s ease;
+        }
+
+        .welcome-icon { font-size: 40px; margin-bottom: 12px; }
+
+        .welcome h2 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 22px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--text), var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .welcome p { color: var(--text-muted); font-size: 13px; line-height: 1.6; }
+
+        .suggested-questions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 16px;
+        }
+
+        .suggested-btn {
+            padding: 7px 14px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text-muted);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        .suggested-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent2);
+            background: rgba(59,130,246,0.08);
+        }
+
+        .message {
+            display: flex;
+            gap: 10px;
+            animation: slideUp 0.3s ease;
+            width: 100%;
+        }
+
+        .message.user { flex-direction: row-reverse; }
+
+        .avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .avatar.bot { background: linear-gradient(135deg, var(--accent), #7c3aed); }
+        .avatar.user { background: var(--surface2); border: 1px solid var(--border); }
+
+        .bubble-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            max-width: calc(100% - 70px); /* ✅ 모바일 말풍선 너비 */
+        }
+
+        .bubble {
+            padding: 10px 14px;
+            border-radius: 14px;
+            font-size: 14px;
+            line-height: 1.7;
+            word-break: break-word; /* ✅ 긴 단어 줄바꿈 */
+        }
+
+        .bubble.bot {
+            background: var(--bot-bubble);
+            border: 1px solid var(--border);
+            border-top-left-radius: 4px;
+        }
+
+        .bubble.user {
+            background: var(--user-bubble);
+            border-top-right-radius: 4px;
+            color: white;
+        }
+
+        .copy-btn {
+            align-self: flex-start;
+            padding: 3px 10px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        .copy-btn:hover { border-color: var(--accent); color: var(--accent2); }
+        .copy-btn.copied { border-color: #3fb950; color: #3fb950; }
+        .message.user .copy-btn { align-self: flex-end; }
+
+        .typing { display: flex; gap: 4px; align-items: center; padding: 4px 0; }
+
+        .typing span {
+            width: 6px;
+            height: 6px;
+            background: var(--text-muted);
+            border-radius: 50%;
+            animation: bounce 1.2s infinite;
+        }
+
+        .typing span:nth-child(2) { animation-delay: 0.2s; }
+        .typing span:nth-child(3) { animation-delay: 0.4s; }
+
+        .input-area {
+            padding: 12px 16px 16px;
+            border-top: 1px solid var(--border);
+            background: rgba(13,17,23,0.95);
+            backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 10;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 8px 12px;
+            transition: border-color 0.2s;
+        }
+
+        .input-wrapper:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+        }
+
+        textarea {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text);
+            font-size: 16px; /* ✅ iOS 자동 줌 방지 (16px 이상) */
+            font-family: 'Noto Sans KR', sans-serif;
+            resize: none;
+            max-height: 120px;
+            line-height: 1.6;
+        }
+
+        textarea::placeholder { color: var(--text-muted); }
+
+        .send-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            background: var(--accent);
+            border: none;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .send-btn:hover { background: var(--accent2); }
+        .send-btn:active { transform: scale(0.95); } /* ✅ 모바일 탭 피드백 */
+        .send-btn:disabled { background: var(--border); cursor: not-allowed; }
+
+        .input-hint {
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        /* ✅ 데스크탑에서만 hint 표시 */
+        @media (max-width: 768px) {
+            .input-hint { display: none; }
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes bounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-top">
+        <div class="header-left">
+            <div class="logo">🎓</div>
+            <div>
+                <div class="header-title">Douner AI</div>
+                <div class="header-sub" data-i18n="subtitle">유학생 AI 상담 서비스</div>
+            </div>
+        </div>
+        <div class="header-right" id="authButtons">
+            <button class="clear-btn" data-i18n="login" onclick="window.location.href='/login'">로그인</button>
+            <button class="clear-btn" data-i18n="signup" onclick="window.location.href='/signup'">회원가입</button>
+        </div>
+        <!--로그인후-->
+        <div id="userMenu" style="display:none; gap:6px;">
+            <button class="clear-btn" data-i18n="mypage" onclick="window.location.href='/mypage'">마이페이지</button>
+            <button class="clear-btn" data-i18n="logout" onclick="logout()">로그아웃</button>
+        </div>
+    </div>
+    <div class="header-bottom">
+        <div class="lang-selector">
+            <button class="lang-btn active" data-lang="ko" onclick="setLang('ko')">한국어</button>
+            <button class="lang-btn" data-lang="en" onclick="setLang('en')">English</button>
+            <button class="lang-btn" data-lang="zh" onclick="setLang('zh')">中文</button>
+            <button class="lang-btn" data-lang="ja" onclick="setLang('ja')">日本語</button>
+        </div>
+        <button class="clear-btn" id="clearBtn" onclick="clearHistory()">🗑 초기화</button>
+    </div>
+</header>
+
+<div class="chat-container" id="chatContainer">
+    <div class="welcome" id="welcome"></div>
+</div>
+
+<div class="input-area">
+    <div class="input-wrapper">
+        <textarea id="questionInput" placeholder="질문을 입력하세요..." rows="1"
+            onkeydown="handleKey(event)"
+            oninput="autoResize(this)"></textarea>
+        <button class="send-btn" id="sendBtn" onclick="ask()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+        </button>
+    </div>
+    <div class="input-hint" data-i18n="inputHint">Enter로 전송 · Shift+Enter로 줄바꿈</div>
+</div>
+
+<script>
+    let currentLang = localStorage.getItem('douner_lang') || 'ko';
+    const STORAGE_KEY = 'douner_chat_history';
+
+    const I18N = {
+        ko: {
+            subtitle: '유학생 AI 상담 서비스',
+            login: '로그인',
+            signup: '회원가입',
+            mypage: '마이페이지',
+            logout: '로그아웃',
+            clear: '🗑 초기화',
+            clearConfirm: '대화 기록을 삭제할까요?',
+            welcomeTitle: '안녕하세요! Douner AI입니다',
+            welcomeDesc: '유학생 생활에 필요한 비자, 학사, 장학금 등<br>궁금한 것들을 무엇이든 물어보세요.',
+            placeholder: '질문을 입력하세요...',
+            inputHint: 'Enter로 전송 · Shift+Enter로 줄바꿈',
+            copy: '복사',
+            copied: '✓ 복사됨',
+            sourceTitle: '📌 참고 자료',
+            sourceLink: '공지 원문 보기',
+            noTitle: '제목 없음',
+            serverError: '서버 오류',
+            connectError: '❌ 서버에 연결할 수 없습니다.',
+            suggestions: [
+                { icon: '🛂', label: '비자 신청 방법', question: '비자 신청 방법이 어떻게 되나요?' },
+                { icon: '💰', label: '장학금 신청', question: '장학금 신청 조건이 어떻게 되나요?' },
+                { icon: '📚', label: '수강신청 안내', question: '수강신청은 어떻게 하나요?' },
+                { icon: '🎓', label: '졸업 요건', question: '졸업 요건이 무엇인가요?' }
+            ]
+        },
+        en: {
+            subtitle: 'AI counseling for international students',
+            login: 'Log in',
+            signup: 'Sign up',
+            mypage: 'My Page',
+            logout: 'Log out',
+            clear: '🗑 Clear',
+            clearConfirm: 'Delete the chat history?',
+            welcomeTitle: 'Hello, I am Douner AI',
+            welcomeDesc: 'Ask about visas, academics, scholarships, and campus life for international students.',
+            placeholder: 'Type your question...',
+            inputHint: 'Enter to send · Shift+Enter for a new line',
+            copy: 'Copy',
+            copied: '✓ Copied',
+            sourceTitle: '📌 References',
+            sourceLink: 'Open original notice',
+            noTitle: 'Untitled',
+            serverError: 'Server error',
+            connectError: '❌ Cannot connect to the server.',
+            suggestions: [
+                { icon: '🛂', label: 'Visa application', question: 'How do I apply for a visa?' },
+                { icon: '💰', label: 'Scholarships', question: 'What are the scholarship application requirements?' },
+                { icon: '📚', label: 'Course registration', question: 'How does course registration work?' },
+                { icon: '🎓', label: 'Graduation requirements', question: 'What are the graduation requirements?' }
+            ]
+        },
+        zh: {
+            subtitle: '留学生 AI 咨询服务',
+            login: '登录',
+            signup: '注册',
+            mypage: '我的页面',
+            logout: '退出登录',
+            clear: '🗑 清空',
+            clearConfirm: '要删除聊天记录吗？',
+            welcomeTitle: '你好！我是 Douner AI',
+            welcomeDesc: '关于签证、学业、奖学金和校园生活的问题，都可以向我提问。',
+            placeholder: '请输入问题...',
+            inputHint: 'Enter 发送 · Shift+Enter 换行',
+            copy: '复制',
+            copied: '✓ 已复制',
+            sourceTitle: '📌 参考资料',
+            sourceLink: '查看原公告',
+            noTitle: '无标题',
+            serverError: '服务器错误',
+            connectError: '❌ 无法连接服务器。',
+            suggestions: [
+                { icon: '🛂', label: '签证申请方法', question: '签证申请方法是什么？' },
+                { icon: '💰', label: '奖学金申请', question: '奖学金申请条件是什么？' },
+                { icon: '📚', label: '选课指南', question: '如何进行选课？' },
+                { icon: '🎓', label: '毕业要求', question: '毕业要求是什么？' }
+            ]
+        },
+        ja: {
+            subtitle: '留学生向けAI相談サービス',
+            login: 'ログイン',
+            signup: '会員登録',
+            mypage: 'マイページ',
+            logout: 'ログアウト',
+            clear: '🗑 初期化',
+            clearConfirm: 'チャット履歴を削除しますか？',
+            welcomeTitle: 'こんにちは！Douner AIです',
+            welcomeDesc: 'ビザ、学事、奨学金、学生生活について<br>気になることを何でも聞いてください。',
+            placeholder: '質問を入力してください...',
+            inputHint: 'Enterで送信 · Shift+Enterで改行',
+            copy: 'コピー',
+            copied: '✓ コピー済み',
+            sourceTitle: '📌 参考資料',
+            sourceLink: '元のお知らせを見る',
+            noTitle: 'タイトルなし',
+            serverError: 'サーバーエラー',
+            connectError: '❌ サーバーに接続できません。',
+            suggestions: [
+                { icon: '🛂', label: 'ビザ申請方法', question: 'ビザの申請方法を教えてください。' },
+                { icon: '💰', label: '奨学金申請', question: '奨学金の申請条件を教えてください。' },
+                { icon: '📚', label: '履修登録案内', question: '履修登録はどのように行いますか？' },
+                { icon: '🎓', label: '卒業要件', question: '卒業要件を教えてください。' }
+            ]
+        }
+    };
+
+    function t(key) {
+        return (I18N[currentLang] && I18N[currentLang][key]) || I18N.ko[key] || key;
+    }
+
+    function saveHistory(role, content) {
+        if (localStorage.getItem('authToken')) return;
+        const history = getHistory();
+        history.push({ role, content, time: new Date().toISOString() });
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+    }
+
+    function getHistory() {
+        try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+        catch { return []; }
+    }
+
+    async function loadHistory() {
+        const token = localStorage.getItem('authToken');
+
+        if (token) {
+            try {
+                const res = await fetch('/api/v1/chat-history?limit=50', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.ok) {
+                const finalAnswer = formatAnswer(data.answer || "") + renderSources(data.sources);
+                renderMessage('bot', finalAnswer);
+            } else {
+                renderMessage('bot', `❌ ${data.detail || t('serverError')}`);
+            }
+        } catch (err) {
+                console.error('Failed to load server history:', err);
+            }
+        }
+
+        const history = getHistory();
+        if (history.length === 0) return;
+        document.getElementById('welcome')?.remove();
+        history.forEach(({ role, content }) => renderMessage(role, content, false));
+    }
+
+    async function clearHistory() {
+        if (!confirm(t('clearConfirm'))) return;
+        const token = localStorage.getItem('authToken');
+
+        if (token) {
+            try {
+                await fetch('/api/v1/chat-history', {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+            } catch (err) {
+                console.error('Failed to clear server history:', err);
+            }
+        }
+
+        localStorage.removeItem(STORAGE_KEY);
+        const container = document.getElementById('chatContainer');
+        container.innerHTML = '<div class="welcome" id="welcome"></div>';
+        renderWelcome();
+    }
+
+
+    function renderWelcome() {
+        const welcome = document.getElementById('welcome');
+        if (!welcome) return;
+
+        const suggestions = t('suggestions').map(item => `
+            <button class="suggested-btn" onclick="askSuggested('${item.question.replace(/'/g, "\\'")}')">${item.icon} ${item.label}</button>
+        `).join('');
+
+        welcome.innerHTML = `
+            <div class="welcome-icon">🌏</div>
+            <h2>${t('welcomeTitle')}</h2>
+            <p>${t('welcomeDesc')}</p>
+            <div class="suggested-questions">${suggestions}</div>
+        `;
+    }
+
+    function applyLanguage() {
+        document.documentElement.lang = currentLang === 'zh' ? 'zh-CN' : currentLang;
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            el.textContent = t(el.dataset.i18n);
+        });
+
+        document.getElementById('clearBtn').textContent = t('clear');
+        document.getElementById('questionInput').placeholder = t('placeholder');
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.lang === currentLang);
+        });
+        renderWelcome();
+    }
+
+    function setLang(lang) {
+        currentLang = lang;
+        localStorage.setItem('douner_lang', lang);
+        applyLanguage();
+    }
+
+
+    function handleKey(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            ask();
+        }
+    }
+
+    function autoResize(el) {
+        el.style.height = 'auto';
+        el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+    }
+
+    function askSuggested(question) {
+        document.getElementById('questionInput').value = question;
+        autoResize(document.getElementById('questionInput'));
+        ask();
+    }
+
+    function escapeHtml(value) {
+        return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function formatAnswer(value) {
+        return escapeHtml(value).replace(/\n/g, '<br>');
+    }
+
+    function renderSources(sources) {
+        if (!sources || sources.length === 0) return '';
+
+        const rows = sources.map((src, index) => {
+            const title = escapeHtml(src.title || t('noTitle'));
+            const category = src.category ? ` [${escapeHtml(src.category)}]` : '';
+            const url = src.url ? escapeHtml(src.url) : '';
+            const link = url ? `<br>&nbsp;&nbsp;&nbsp;<a href="${url}" target="_blank" rel="noopener noreferrer">${t('sourceLink')}</a>` : '';
+            return `${index + 1}. ${title}${category}${link}`;
+        }).join('<br>');
+
+        return `<br><br>${t('sourceTitle')}<br>${rows}`;
+    }
+
+    function renderMessage(role, content, save = true) {
+        document.getElementById('welcome')?.remove();
+        const container = document.getElementById('chatContainer');
+        const msg = document.createElement('div');
+        msg.className = `message ${role}`;
+
+        const plainText = content.replace(/<br>/g, '\n').replace(/<[^>]+>/g, '');
+
+        msg.innerHTML = `
+            <div class="avatar ${role}">${role === 'bot' ? '🤖' : '👤'}</div>
+            <div class="bubble-wrapper">
+                <div class="bubble ${role}">${content}</div>
+                <button class="copy-btn" onclick="copyText(this, \`${plainText.replace(/`/g, '\\`')}\`)">${t('copy')}</button>
+            </div>
+        `;
+        container.appendChild(msg);
+        container.scrollTop = container.scrollHeight;
+        if (save) saveHistory(role, content);
+    }
+
+    function copyText(btn, text) {
+        // HTTPS면 clipboard API 사용
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(() => {
+                showCopied(btn);
+            });
+        } else {
+            // HTTP fallback (execCommand)
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                showCopied(btn);
+            } catch (err) {
+                alert('복사 실패했어요. 직접 텍스트를 선택해주세요.');
+            }
+            document.body.removeChild(textarea);
+        }
+    }
+
+    function showCopied(btn) {
+        btn.textContent = t('copied');
+        btn.classList.add('copied');
+        setTimeout(() => {
+            btn.textContent = t('copy');
+            btn.classList.remove('copied');
+        }, 2000);
+    }
+
+    function addTyping() {
+        document.getElementById('welcome')?.remove();
+        const container = document.getElementById('chatContainer');
+        const msg = document.createElement('div');
+        msg.className = 'message bot';
+        msg.id = 'typing';
+        msg.innerHTML = `
+            <div class="avatar bot">🤖</div>
+            <div class="bubble bot">
+                <div class="typing"><span></span><span></span><span></span></div>
+            </div>
+        `;
+        container.appendChild(msg);
+        container.scrollTop = container.scrollHeight;
+    }
+
+
+    function checkAuth() {
+        const token = localStorage.getItem('authToken');
+        const authButtons = document.getElementById('authButtons');
+        const userMenu = document.getElementById('userMenu');
+
+        if (token) {
+            // 로그인 상태 → 로그인/회원가입 숨기고 마이페이지 표시
+            authButtons.style.display = 'none';
+            userMenu.style.display = 'flex';
+        } else {
+            // 비로그인 → 로그인/회원가입 표시
+            authButtons.style.display = 'flex';
+            userMenu.style.display = 'none';
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('authUser');
+        location.reload();
+    }
+
+    async function ask() {
+        const input = document.getElementById('questionInput');
+        const question = input.value.trim();
+        if (!question) return;
+
+        const sendBtn = document.getElementById('sendBtn');
+        sendBtn.disabled = true;
+        input.value = '';
+        input.style.height = 'auto';
+
+        renderMessage('user', question);
+        addTyping();
+
+        try {
+            const token = localStorage.getItem('authToken');
+            const res = await fetch('/api/v1/ask', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json',
+                 'Authorization': token ? `Bearer ${token}` : ''
+                 },
+                body: JSON.stringify({ question, language: currentLang })
+            });
+
+            const data = await res.json();
+            document.getElementById('typing')?.remove();
+
+            if (res.ok) {
+                 let finalAnswer = data.answer || "";
+
+                // ✅ 참고 자료 표시
+                if (data.sources && data.sources.length > 0) {
+                    finalAnswer += `\n\n${t('sourceTitle')}`;
+
+                    data.sources.forEach((src, index) => {
+                        finalAnswer += `\n${index + 1}. ${src.title || "제목 없음"}`;
+
+                        if (src.category) {
+                            finalAnswer += ` [${src.category}]`;
+                        }
+
+                        if (src.url) {
+                            finalAnswer += `\n   <a href="${src.url}" target="_blank" rel="noopener noreferrer">${t('sourceLink')}</a>`;
+                        }
+                    });
+                } renderMessage('bot', formatAnswer(finalAnswer));
+        }else {
+                renderMessage('bot', `❌ ${data.detail || t('serverError')}`);
+            }
+        } catch (err) {
+            document.getElementById('typing')?.remove();
+            renderMessage('bot', t('connectError'));
+        }
+
+        sendBtn.disabled = false;
+        input.focus();
+    }
+
+    // ✅ 모바일 키보드 올라올 때 스크롤 처리
+    window.visualViewport?.addEventListener('resize', () => {
+        const container = document.getElementById('chatContainer');
+        container.scrollTop = container.scrollHeight;
+    });
+
+    window.onload = async function() {
+        applyLanguage();
+        checkAuth();
+        await loadHistory();
+    }
+</script>
+
+</body>
+</html>
